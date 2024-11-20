@@ -111,7 +111,7 @@ def dijkstras(s: str, c: list, v: list) -> str:
         path = ''.join(why)
         output += f'\n{v[i]}\t{path_vals[v[i]]}\t{path}'
     return output
-# history is wrong. i invented spaghetti. (see above code)
+# god knows what my mental stability is like after this
 
 ''' method kruskals() 
 ######################################
@@ -140,14 +140,10 @@ def kruskals(c,v) -> tuple:
         sum += i[2]
     return (path, new_matrix,sum)
     
-
-###############################
-## METHOD UNDER CONSTRUCTION ##
-###############################
 ''' method critical_path() 
-! known issues
-    - more than two vertices with multiple outward edges are not supported
-    - vertices with 2 or more outward edges with the same value will result in an infinite loop
+######################################
+## DOCUMENTATION UNDER CONSTRUCTION ##
+######################################
 '''
 def critical_path(c,v):
     # define start and end
@@ -155,26 +151,10 @@ def critical_path(c,v):
     te = set(x[1] for x in c)
     start = list(ts - (ts & te))[0]
     end = list(te - (ts & te))[0]
-    print(start,end,'\n',c)
     vals = {x: [0,inf] for x in v}
 
-    cur_node = start
+    # ess
     vals[start][1] = vals[start][0]
-    while 0 in list(i[0] for i in vals.values())[1:]:
-        for i in c:
-            #print(cur_node, i)
-            if vals[i[1]][0] < vals[i[0]][0] + i[2] and cur_node == i[0] :
-                cur_node = i[1]
-                vals[i[1]][0] = vals[i[0]][0] + i[2]
-                break
-            elif cur_node == i[0] and vals[i[1]][0] > vals[i[0]][0] + i[2]:
-                if vals[i[1]][0] == 0:
-                    continue
-                else:
-                    cur_node = start
-                    break
-        if cur_node == end:
-            cur_node = start
     j=0
     while j < (len(c)):
         i = c[j]
@@ -184,45 +164,26 @@ def critical_path(c,v):
             j=0
         else:
             j+=1
-    for s in vals.keys():
-        print(f'{s}: {vals[s][0]}')
-         
-    cur_node = end
+
+    # lss
     vals[end][1] = vals[end][0]
-
-    while inf in list(i[1] for i in vals.values())[1:]:
-        #cur_node = list(vals.keys())[list(vals.values()).index(inf)]
-        for i in c:
-            print(cur_node, i)
-            if cur_node == i[1]:
-                if vals[i[0]][1] == inf:
-                    cur_node = i[0]
-                    vals[i[0]][1] = vals[i[1]][1] - i[2]
-                    break
-                
-                elif vals[i[0]][1] > vals[i[1]][1] - i[2]:
-                    continue
-                elif vals[i[0]][1] <= vals[i[1]][1] - i[2]:
-                    cur_node = i[0]
-
-        if cur_node == start:
-            cur_node = end
-        for s in vals.keys():
-            print(f'{s}: {vals[s][1]}')
-        sleep(1)
-
     j=len(c)-1
     while j > 0:
         i = c[j]
-        #print('\t',i)
-        if vals[i[1]][1] - i[2] < vals[i[1]][0]:
+        if vals[i[1]][1] - i[2] < vals[i[0]][1]:
             vals[i[0]][1] = vals[i[1]][1] - i[2]
             j=len(c)-1
         else:
             j-=1
-    for s in vals.keys():
-        print(f'{s}: {vals[s][1]}')
-    print(vals)
+
+    # find critical path
+    a = list(vals.values())
+    b = list(vals.keys())
+    temp = [(a[x][0], b[x]) for x in range(len(vals)) if a[x][0] == a[x][1]]
+    temp.sort(key=lambda x: x[0])
+    crit_path = [x[1] for x in temp]
+    crit_path_val = vals[end][1]
+    return (vals, crit_path, crit_path_val)
 
 ''' method get_all_edges(m,i)
 turns an adjacency matrix into a list of tuples containing possible paths from one vertex to another via edges
@@ -323,7 +284,10 @@ def crt_pth_test():
     ]
     indexes = list(alphabet[:9])
     connections = get_all_edges(matrix,indexes)
-    critical_path(connections,indexes)
+    outp = critical_path(connections,indexes)
+    for key,value in outp[0].items():
+        print(f'Task {key}:\n  - ESS: {value[0]}\n  - LSS: {value[1]}')
+    print(f'Critical path: {" -> ".join(outp[1])}\nMin. time: {outp[2]}')
 
 
 def main():
@@ -332,15 +296,18 @@ def main():
         'shortest_path()',
         'kruskals_test()',
         'crt_pth_test()']
-    try:
-        test = int(input(f"pick a number. any number (from 1-{len(funcs)}). "))-1
-        if test < 0 or test >= len(funcs):
-            raise TypeError
-    except TypeError:
-        print('no.')
-    else:
-        print(f'Beginning {funcs[test]} test(s)...')
-        exec(funcs[test])
+    while True:
+        try:
+            test = int(input(f"pick a number. any number (from 1-{len(funcs)}). "))-1
+            if test < 0 or test >= len(funcs):
+                raise ValueError
+        except ValueError:
+            print('no. try again.')
+        else:
+            print(f'\nBeginning {funcs[test]} test(s)...')
+            exec(funcs[test])
+            break
+    
     
 
 if __name__ == '__main__':
