@@ -111,7 +111,7 @@ def dijkstras(s: str, c: list, v: list) -> str:
         path = ''.join(why)
         output += f'\n{v[i]}\t{path_vals[v[i]]}\t{path}'
     return output
-# history is wrong. i invented spaghetti.
+# history is wrong. i invented spaghetti. (see above code)
 
 ''' method kruskals() 
 ######################################
@@ -159,7 +159,7 @@ def critical_path(c,v):
     vals = {x: [0,inf] for x in v}
 
     cur_node = start
-    #vals[start][1] = vals[start][0]
+    vals[start][1] = vals[start][0]
     while 0 in list(i[0] for i in vals.values())[1:]:
         for i in c:
             #print(cur_node, i)
@@ -189,34 +189,37 @@ def critical_path(c,v):
          
     cur_node = end
     vals[end][1] = vals[end][0]
+
     while inf in list(i[1] for i in vals.values())[1:]:
+        #cur_node = list(vals.keys())[list(vals.values()).index(inf)]
         for i in c:
             print(cur_node, i)
-            if vals[i[0]][1] > vals[i[1]][1] - i[2] and cur_node == i[1]:
-                cur_node = i[0]
-                vals[i[0]][1] = vals[i[1]][1] - i[2]
-                break
-            elif cur_node == i[1] and vals[i[0]][1] < vals[i[1]][1] - i[2]:
-                if vals[i[0]][1] == 0:
-                    continue
-                else:
-                    cur_node = start
+            if cur_node == i[1]:
+                if vals[i[0]][1] == inf:
+                    cur_node = i[0]
+                    vals[i[0]][1] = vals[i[1]][1] - i[2]
                     break
+                
+                elif vals[i[0]][1] > vals[i[1]][1] - i[2]:
+                    continue
+                elif vals[i[0]][1] <= vals[i[1]][1] - i[2]:
+                    cur_node = i[0]
+
         if cur_node == start:
             cur_node = end
         for s in vals.keys():
             print(f'{s}: {vals[s][1]}')
-        print(vals)
         sleep(1)
-    j=0
-    while j < (len(c)):
+
+    j=len(c)-1
+    while j > 0:
         i = c[j]
         #print('\t',i)
         if vals[i[1]][1] - i[2] < vals[i[1]][0]:
-            vals[i[0]][1] = vals[i[1]][1] + i[2]
-            j=0
+            vals[i[0]][1] = vals[i[1]][1] - i[2]
+            j=len(c)-1
         else:
-            j+=1
+            j-=1
     for s in vals.keys():
         print(f'{s}: {vals[s][1]}')
     print(vals)
