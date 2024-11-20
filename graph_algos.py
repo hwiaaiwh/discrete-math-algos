@@ -113,13 +113,15 @@ def dijkstras(s: str, c: list, v: list) -> str:
     return output
 # history is wrong. i invented spaghetti.
 
-''' method kruskals() ####### TBD
+''' method kruskals() 
+######################################
+## DOCUMENTATION UNDER CONSTRUCTION ##
+######################################
 '''
 def kruskals(c,v) -> tuple:
     path = []
     sum = 0
-    traversed = [] 
-    print(traversed)
+    traversed = []
     sort_connects = sorted(c,key=lambda x: x[2])
     while len(traversed) < len(v):
         for i in sort_connects:
@@ -139,16 +141,85 @@ def kruskals(c,v) -> tuple:
     return (path, new_matrix,sum)
     
 
-''' method critical_path() ####### TBD
+###############################
+## METHOD UNDER CONSTRUCTION ##
+###############################
+''' method critical_path() 
+! known issues
+    - more than two vertices with multiple outward edges are not supported
+    - vertices with 2 or more outward edges with the same value will result in an infinite loop
 '''
 def critical_path(c,v):
     # define start and end
-    starts = set(list(x[0] for x in c))
-    ends = set(list(x[1] for x in c))
-    start = list(starts - (starts & ends))[0]
-    end = list(ends - (starts & ends))[0]
-    print(start, end)
+    ts = set(x[0] for x in c)
+    te = set(x[1] for x in c)
+    start = list(ts - (ts & te))[0]
+    end = list(te - (ts & te))[0]
+    print(start,end,'\n',c)
+    vals = {x: [0,inf] for x in v}
 
+    cur_node = start
+    #vals[start][1] = vals[start][0]
+    while 0 in list(i[0] for i in vals.values())[1:]:
+        for i in c:
+            #print(cur_node, i)
+            if vals[i[1]][0] < vals[i[0]][0] + i[2] and cur_node == i[0] :
+                cur_node = i[1]
+                vals[i[1]][0] = vals[i[0]][0] + i[2]
+                break
+            elif cur_node == i[0] and vals[i[1]][0] > vals[i[0]][0] + i[2]:
+                if vals[i[1]][0] == 0:
+                    continue
+                else:
+                    cur_node = start
+                    break
+        if cur_node == end:
+            cur_node = start
+    j=0
+    while j < (len(c)):
+        i = c[j]
+        #print('\t',i)
+        if vals[i[0]][0] + i[2] > vals[i[1]][0]:
+            vals[i[1]][0] = vals[i[0]][0] + i[2]
+            j=0
+        else:
+            j+=1
+    for s in vals.keys():
+        print(f'{s}: {vals[s][0]}')
+         
+    cur_node = end
+    vals[end][1] = vals[end][0]
+    while inf in list(i[1] for i in vals.values())[1:]:
+        for i in c:
+            print(cur_node, i)
+            if vals[i[0]][1] > vals[i[1]][1] - i[2] and cur_node == i[1]:
+                cur_node = i[0]
+                vals[i[0]][1] = vals[i[1]][1] - i[2]
+                break
+            elif cur_node == i[1] and vals[i[0]][1] < vals[i[1]][1] - i[2]:
+                if vals[i[0]][1] == 0:
+                    continue
+                else:
+                    cur_node = start
+                    break
+        if cur_node == start:
+            cur_node = end
+        for s in vals.keys():
+            print(f'{s}: {vals[s][1]}')
+        print(vals)
+        sleep(1)
+    j=0
+    while j < (len(c)):
+        i = c[j]
+        #print('\t',i)
+        if vals[i[1]][1] - i[2] < vals[i[1]][0]:
+            vals[i[0]][1] = vals[i[1]][1] + i[2]
+            j=0
+        else:
+            j+=1
+    for s in vals.keys():
+        print(f'{s}: {vals[s][1]}')
+    print(vals)
 
 ''' method get_all_edges(m,i)
 turns an adjacency matrix into a list of tuples containing possible paths from one vertex to another via edges
@@ -157,6 +228,7 @@ turns an adjacency matrix into a list of tuples containing possible paths from o
     i (list): the list of the values of all vertices
 <- returns
     connections (list): a list of tuples with the format (start vertex, end vertex, edge value)
+* time complexity (i think): O(n^2)
 '''
 def get_all_edges(m: list, i: list) -> list:
     edges = []
@@ -174,6 +246,7 @@ turns the edges bidirectional (turns the paths from get_all_edges() to edges wit
     c (list): a list of tuples describing edges and their start and end vertices
 <- returns
     new_list (list): a list of tuples with the format (vertex 1, vertex 2, edge value) describing edges and their connected vertices
+* time complexity (i think): O(n^2)
 '''
 def make_edges_bidirectional(c: list) -> tuple:
     new_list = [x for x in c]
@@ -230,18 +303,22 @@ def kruskals_test():
     connections = get_all_edges(matrix,indexes)
     outp = kruskals(connections, indexes)
     outpm = numpy.array(outp[1])
-    print(f'Paths: {outp[0]}\nMatrix: \n{outpm}\nSum: {outp[2]}')
+    print(f'Paths: {outp[0]}\nSum: {outp[2]}\nMatrix: \n{outpm}')
 
 # test case for critical path
 def crt_pth_test():
     matrix = [
-        [0,  2,  0,  1,  0],
-        [0,  0,  4,  0,  0],
-        [0,  0,  0,  0,  3],
-        [0,  0,  0,  0,  5],
-        [0,  0,  0,  0,  0]
+        [0,  2,  0,  1,  0,  0,  4,  0,  0],
+        [0,  0,  4,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  3,  0,  0,  0,  0],
+        [0,  0,  0,  0,  5,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  7,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  0],
+        [0,  0,  0,  0,  0,  0,  0,  3,  0],
+        [0,  0,  0,  0,  0,  0,  0,  0,  4],
+        [0,  0,  0,  0,  1,  0,  0,  0,  0],
     ]
-    indexes = list(alphabet[:5])
+    indexes = list(alphabet[:9])
     connections = get_all_edges(matrix,indexes)
     critical_path(connections,indexes)
 
@@ -257,10 +334,9 @@ def main():
         if test < 0 or test >= len(funcs):
             raise TypeError
     except TypeError:
-        print('Error encountered. Deleting System32...')
-        sleep(10)
-        print("Error encountered. Gaining administrator access for System32...")
+        print('no.')
     else:
+        print(f'Beginning {funcs[test]} test(s)...')
         exec(funcs[test])
     
 
